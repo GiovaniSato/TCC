@@ -1570,7 +1570,7 @@ rule C_STATIC_LIBRARY_LINKER____idf_protocol_examples_common_
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = C:\Espressif\tools\cmake\3.20.3\bin\cmake.exe --regenerate-during-build -SC:\Users\Giova\Desktop\Njogos\TCC\tcp -BC:\Users\Giova\Desktop\Njogos\TCC\tcp\build
+  command = C:\Espressif\tools\cmake\3.20.3\bin\cmake.exe --regenerate-during-build -SC:\Users\Giova\Desktop\Njogos\TCC\codigos\EnviarGit\TCC\tcp -BC:\Users\Giova\Desktop\Njogos\TCC\codigos\EnviarGit\TCC\tcp\build
   description = Re-running CMake...
   generator = 1
 

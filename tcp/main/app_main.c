@@ -33,6 +33,8 @@
 static const char *TAG = "MQTT_EXAMPLE";
 
 
+
+
 static void log_error_if_nonzero(const char *message, int error_code)
 {
     if (error_code != 0) {
@@ -109,8 +111,10 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
 static void mqtt_app_start(void)
 {
+    
+
     esp_mqtt_client_config_t mqtt_cfg = {
-        .uri = CONFIG_BROKER_URL,
+        .uri = "mqtt://broker.hivemq.com",
     };
 #if CONFIG_BROKER_URL_FROM_STDIN
     char line[128];
@@ -168,4 +172,6 @@ void app_main(void)
     ESP_ERROR_CHECK(example_connect());
 
     mqtt_app_start();
+
+    
 }

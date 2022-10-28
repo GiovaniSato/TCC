@@ -1,4 +1,4 @@
-/* * Data converted from C:/Users/Giova/Desktop/Njogos/TCC/tcp/build/esp-idf/mbedtls/x509_crt_bundle
+/* * Data converted from C:/Users/Giova/Desktop/Njogos/TCC/codigos/EnviarGit/TCC/tcp/build/esp-idf/mbedtls/x509_crt_bundle
  */
 .data
 .section .rodata.embedded

@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/Giova/Desktop/Njogos/TCC/tcp/main
+# Install script for directory: C:/Users/Giova/Desktop/Njogos/TCC/codigos/EnviarGit/TCC/tcp/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
