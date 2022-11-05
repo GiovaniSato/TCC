@@ -14,9 +14,8 @@
 #include "conectado.h"
 //-----------------------------------------------------------------------------------------
 //Declaracoes e definicoes
-#define WIFI_CONNECTED_BIT BIT0
-#define WIFI_FAIL_BIT      BIT1
-extern EventGroupHandle_t s_wifi_event_group ;
+
+//extern EventGroupHandle_t s_wifi_event_group ;
 static const char *TAG = "Teste conectado";
 //-----------------------------------------------------------------------------------------
 void app_main(void)
@@ -52,20 +51,25 @@ void app_main(void)
   //-----------------------------------------------------------------------------------------
   // Cria o evento que vai ser utilizado em wifi e mqtt
   criarEvento();
+  xEventGroupClearBits(s_wifi_event_group, INTERNET_DISPONIVEL_BIT);
   //-----------------------------------------------------------------------------------------
   // Inicializa wifi e o MQTT
   wifi_start();
   // Espera o wifi ser conectado
   xEventGroupWaitBits(
           s_wifi_event_group,      //EventGroup q vai esperar
-          WIFI_CONNECTED_BIT ,     //Bits q está esperando a mudanca
+          INTERNET_DISPONIVEL_BIT ,     //Bits q está esperando a mudanca
           pdFALSE,                 //Os bits n vao ser limpos dps de lidos      
           pdFALSE,                 //pdFALSE é igual a "or",ou seja, espera qualquer um dos dois para continuar  
           portMAX_DELAY            //tempo para esperar os dois bits dps q o primeiro é ativado   
         );
        
-  vTaskDelay(pdMS_TO_TICKS(2000));   // Para n printar logo de uma vez
+  //vTaskDelay(pdMS_TO_TICKS(2000));   // Para n printar logo de uma vez
   ESP_LOGI(TAG, "Conectar MQTT");    // Teste 
   // ...
+  while(1)
+  {
+    vTaskDelay(pdMS_TO_TICKS(2000));
+  }
   
 }

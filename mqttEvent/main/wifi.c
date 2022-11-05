@@ -16,9 +16,8 @@
 #define EXAMPLE_ESP_WIFI_SSID      "WIFI GIOVANI"
 #define EXAMPLE_ESP_WIFI_PASS      "GiovaniSenha"
 #define EXAMPLE_ESP_MAXIMUM_RETRY  10
-#define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
-extern EventGroupHandle_t s_wifi_event_group;
+//extern EventGroupHandle_t s_wifi_event_group;
 static const char *TAG = "wifi station";
 static int s_retry_num = 0;
 //------------------------------------------------------------------------------------
@@ -35,17 +34,19 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 break;
 
             case WIFI_EVENT_STA_DISCONNECTED:
-                if (s_retry_num < EXAMPLE_ESP_MAXIMUM_RETRY)
-                {
-                    esp_wifi_connect();
-                    s_retry_num++;
-                    ESP_LOGI(TAG, "retry to connect to the AP");
-                }
-                else 
-                {
-                    xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
-                }
-                ESP_LOGI(TAG,"connect to the AP fail");    
+                xEventGroupClearBits(s_wifi_event_group, INTERNET_DISPONIVEL_BIT);
+                esp_wifi_connect();
+                //if (s_retry_num < EXAMPLE_ESP_MAXIMUM_RETRY)
+                //{
+                    //esp_wifi_connect();
+                    //s_retry_num++;
+                    //ESP_LOGI(TAG, "retry to connect to the AP");
+                //}
+                //else 
+                //{
+                //    xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
+                //}
+                //ESP_LOGI(TAG,"connect to the AP fail");    
         }
     }
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) 
@@ -53,7 +54,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
         ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
         s_retry_num = 0;
-        xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
+        xEventGroupSetBits(s_wifi_event_group, INTERNET_DISPONIVEL_BIT);
     }    
 }
 
@@ -99,30 +100,7 @@ void wifi_start(void)
     ESP_LOGI(TAG, "wifi_init_sta finished.");
     //-----------------------------------------------------------------------------------------
     //Aguarda  WIFI_CONNECTED_BIT ou WIFI_FAIL_BIT
-    EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
-            WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
-            pdFALSE,
-            pdFALSE,
-            portMAX_DELAY);
-    if (bits & WIFI_CONNECTED_BIT) 
-    {
-        ESP_LOGI(TAG, "connected to ap SSID:%s password:%s",
-                 EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
-                 
-    } 
-    else if (bits & WIFI_FAIL_BIT) 
-    {
-        ESP_LOGI(TAG, "Failed to connect to SSID:%s, password:%s",
-                 EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
-    } else 
-    {
-        ESP_LOGE(TAG, "UNEXPECTED EVENT");
-    }
 
-    /* The event will not be processed after unregister */
-    ESP_ERROR_CHECK(esp_event_handler_instance_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, instance_got_ip));
-    ESP_ERROR_CHECK(esp_event_handler_instance_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, instance_any_id));
-    vEventGroupDelete(s_wifi_event_group);
     //------------------------------------------------------------------------------------
     //Para colocar o wifi em modo de economia
     #if CONFIG_PM_ENABLE
