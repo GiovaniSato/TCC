@@ -1,4 +1,3 @@
-//Bibliotecas
 #include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -11,50 +10,46 @@
 #include "lwip/sys.h"
 #include "wifi.h"
 #include "conectado.h"
-//------------------------------------------------------------------------------------
-//Declaracoes e definicoes
+
 #define EXAMPLE_ESP_WIFI_SSID      "WIFI GIOVANI"
 #define EXAMPLE_ESP_WIFI_PASS      "GiovaniSenha"
-//#define EXAMPLE_ESP_MAXIMUM_RETRY  10
-//extern EventGroupHandle_t s_wifi_event_group;
+//#define EXAMPLE_ESP_WIFI_SSID      "Multilaser_6D8920"
+//#define EXAMPLE_ESP_WIFI_PASS      "noseafter605"
 static const char *TAG = "wifi station";
-//static int s_retry_num = 0;
-//------------------------------------------------------------------------------------
 
+
+/**
+ * @brief Informa a mudança de estados a partir de eventos
+ * 
+ * @param arg --
+ * @param event_base O ID base do evento para registrar o handler
+ * @param event_id O ID do evento para registrar o handler
+ * @param event_data O dado, especifico da ocorrencia do evento, que é passado para o handler
+ */
 static void event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 {
+    /* Evento de WIFI */
     if (event_base == WIFI_EVENT)
     {
         switch (event_id)
         {
+            /* Caso wifi ligado, conecta o WIFI */
             case WIFI_EVENT_STA_START:
                 esp_wifi_connect();
                 break;
 
+            /* Caso o wifi desconectado, limpa o bit INTERNET_DISPONIVEL_BIT e tenta reconectar*/
             case WIFI_EVENT_STA_DISCONNECTED:
                 xEventGroupClearBits(IM_event_group, INTERNET_DISPONIVEL_BIT);
-                esp_wifi_connect();
-                /*
-                if (s_retry_num < EXAMPLE_ESP_MAXIMUM_RETRY)
-                {
-                    esp_wifi_connect();
-                    s_retry_num++;
-                    ESP_LOGI(TAG, "retry to connect to the AP");
-                }
-                else 
-                {
-                    xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
-                }
-                ESP_LOGI(TAG,"connect to the AP fail");
-                */    
+                esp_wifi_connect();  
         }
     }
+    /* Evento IP - seta o bit INTERNET_DISPONIVEL_BIT */ 
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) 
     {
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
         ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
-        //s_retry_num = 0;
         xEventGroupSetBits(IM_event_group, INTERNET_DISPONIVEL_BIT);
     }    
 }
@@ -81,6 +76,7 @@ void wifi_start(void)
                                                         NULL,
                                                         &instance_got_ip));
 
+    /* Configura o wifi */
     wifi_config_t wifi_config =
     {
         .sta = 
@@ -99,11 +95,9 @@ void wifi_start(void)
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config) );
     ESP_ERROR_CHECK(esp_wifi_start() );
     ESP_LOGI(TAG, "wifi_init_sta finished.");
-    //-----------------------------------------------------------------------------------------
-    //Aguarda  WIFI_CONNECTED_BIT ou WIFI_FAIL_BIT
 
-    //------------------------------------------------------------------------------------
-    //Para colocar o wifi em modo de economia
+
+    /* Para colocar o wifi em modo de economia */
     #if CONFIG_PM_ENABLE
         /*
         * Coloca o WiFi em modo de economia de energia. (Essa opção é obrigatória quando o gerenciamento de energia é

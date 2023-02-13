@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/Giova/Desktop/Njogos/TCC/codigos/EnviarGit/TCC/mqttEvent/main
+# Install script for directory: C:/Users/Giova/Desktop/Njogos/Faculdade/TCC/codigos/EnviarGit/TCC/mqttEvent/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

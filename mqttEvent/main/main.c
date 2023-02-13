@@ -1,5 +1,5 @@
-//Bibliotecas
 #include <string.h>
+#include <stdlib.h>
 #include "nvs_flash.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
@@ -12,15 +12,39 @@
 #include "wifi.h"
 #include "mqtt.h"
 #include "conectado.h"
-//-----------------------------------------------------------------------------------------
-//Declaracoes e definicoes
+#include "dht.h"
 
-//extern EventGroupHandle_t s_wifi_event_group ;
-//static const char *TAG = "Teste conectado";
-//-----------------------------------------------------------------------------------------
+#define SENSOR_TYPE DHT_TYPE_AM2301
+const int DHT_DATA_GPIO = 17;
+float temperatura, umidade;
+
+/**
+ * @brief Lê o sensor e publica os dados no broker mqtt
+ * 
+ * Task que repete-se a cada 10000 ms. Publica a leitura de temperatura e umidade do sensor
+ * 
+ */
+void dht_test(void *pvParameters)
+{
+  while(1)
+  {
+    if (dht_read_float_data(SENSOR_TYPE, DHT_DATA_GPIO, &umidade, &temperatura) == ESP_OK)
+    { 
+      publicar("giovani/teste/0", 0, 0, "Temperatura : %0.1fC", temperatura);
+      publicar("giovani/teste/0", 0, 0, "Umidade : %0.1f%%", umidade);
+    }
+    else
+    {
+      printf("Could not read data from sensor\n");
+    }
+    vTaskDelay(pdMS_TO_TICKS(10000));
+  }
+}
+
+
 void app_main(void)
 {      
-  // Inicializa NVS
+  /* Inicializa NVS */
   esp_err_t ret = nvs_flash_init();
   if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
   {
@@ -28,8 +52,8 @@ void app_main(void)
     ret = nvs_flash_init();
   }
   ESP_ERROR_CHECK(ret);
-//-----------------------------------------------------------------------------------------
-  // Para esp 32 entrar em modo de economia
+
+  /* Para o ESP32 entrar em modo de economia de energia */
   #if CONFIG_PM_ENABLE
     /*
     * Configure a escala de frequência dinâmica:
@@ -48,21 +72,28 @@ void app_main(void)
     };
     ESP_ERROR_CHECK( esp_pm_configure(&pm_config) );
   #endif // CONFIG_PM_ENABLE
-  //-----------------------------------------------------------------------------------------
-  // Cria o evento que vai ser utilizado em wifi e mqtt
+  
+  /* Cria o evento IM_event_group para utilizar wifi e mqtt */
   criarEvento();
+
+  /* Limpa os bits que são utilizados que indicam se internet e o mqtt estao disponiveis, assim garantem que são 0
+  antes de serem utlizados */
   xEventGroupClearBits(IM_event_group, INTERNET_DISPONIVEL_BIT);
   xEventGroupClearBits(IM_event_group, MQTT_DISPONIVEL_BIT);
-  //-----------------------------------------------------------------------------------------
-  // Inicializa wifi e o MQTT
+
+  /* Inicilização do wifi e mqtt */
   wifi_start();
   mqtt_start();
-  // Publica uma mensagem
-  publicar();
+  
+  /* Cria a task dht_test */
+  xTaskCreate(dht_test, "dht_test", configMINIMAL_STACK_SIZE * 3, NULL, 5, NULL);
 
+  
+  /* Para evitar watch dog*/
   while(1)
   {
     vTaskDelay(pdMS_TO_TICKS(2000));
   }
   
 }
+
